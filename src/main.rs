@@ -28,17 +28,17 @@ use simple_logger::SimpleLogger;
 const USAGE: &str = "\
 Usage: rres [options]
 
-  -c, --card <card>\tSpecify a GPU (file existing in /dev/dri/, eg. card0)
-  -m, --multi\t\tRead all monitors. If this option is ommited, rres will
-             \t\treturn the resolution of the first detected monitor
-  -v, --verbose\t\tVerbosity level. Can be specified multiple times, e.g. -vv
-  -q, --quiet\t\tLower verbosity level. Opposite to -v
-  -h, --help\t\tShow this help message
+  -c, --card <card>  Specify a GPU (file existing in /dev/dri/, eg. card0)
+  -m, --multi        Read all monitors. If this option is ommited, rres will
+                     return the resolution of the first detected monitor
+  -v, --verbose      Verbosity level. Can be specified multiple times, e.g. -vv
+  -q, --quiet        Lower verbosity level. Opposite to -v
+  -h, --help         Show this help message
 
 Environment variables:
 
-  RRES_DISPLAY=<index>\t\tSelect display in single mode (starting at 0)
-  RRES_FORCE_RES=RESXxRESY\tForce a specific resolution to be detected
+  RRES_DISPLAY=<index>      Select display in single mode (starting at 0)
+  RRES_FORCE_RES=RESXxRESY  Force a specific resolution to be detected
 
 Wine Virtual Desktop example:
 
