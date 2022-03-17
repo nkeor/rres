@@ -2,10 +2,12 @@
 
 > A xrandr replacement to gather display resolutions
 
+_Recently under new maintainership, things subject to changes_
+
 ## Install
 
 ```
-cargo install --git https://github.com/rokbma/rres.git
+cargo install rres
 ```
 
 ## Usage
@@ -35,12 +37,8 @@ Wine Virtual Desktop example:
 
 All notable changes will be documented in the [CHANGELOG](./CHANGELOG.md)
 
-## Contributing
-
-Please speak with me in [Matrix](https://matrix.to/#/!SlYhhmreXjJylcsjfn:tedomum.net?via=matrix.org&via=tedomum.net) before sending PRs.
-
 ## License
 
 Licensed under the GPLv3 license.
 
-Copyright (c) 2021 rokbma & the johncena141 hacker group on 1337x.to
+Copyright (c) 2022 Namkhai B.

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 rokbma & the johncena141 hacker group on 1337x.to
+// Copyright (c) 2022 Namkhai B.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
