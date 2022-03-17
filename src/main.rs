@@ -25,15 +25,19 @@ use drm::Device;
 use eyre::WrapErr;
 use simple_logger::SimpleLogger;
 
+mod fsr;
+
 const USAGE: &str = "\
 Usage: rres [options]
 
-  -c, --card <card>  Specify a GPU (file existing in /dev/dri/, eg. card0)
-  -m, --multi        Read all monitors. If this option is ommited, rres will
-                     return the resolution of the first detected monitor
-  -v, --verbose      Verbosity level. Can be specified multiple times, e.g. -vv
-  -q, --quiet        Lower verbosity level. Opposite to -v
-  -h, --help         Show this help message
+  -c, --card <card>       Specify a GPU (file existing in /dev/dri/, eg. card0)
+  -m, --multi             Read all monitors. If this option is ommited, rres will
+                          return the resolution of the first detected monitor
+  -v, --verbose           Verbosity level. Can be specified multiple times, e.g. -vv
+  -q, --quiet             Lower verbosity level. Opposite to -v
+  -h, --help              Show this help message
+  -g, --gamescope <mode>  Gamescope mode. Also supports FSR upscaling
+                          Supported modes are none, ultra, quality, balanced and performance
 
 Environment variables:
 
@@ -42,7 +46,11 @@ Environment variables:
 
 Wine Virtual Desktop example:
 
-  wine \"explorer /desktop=Game,$(./rres)\" game.exe";
+  wine \"explorer /desktop=Game,$(./rres)\" game.exe
+
+Gamescope example:
+
+  gamescope $(./rres -g ultra) -- wine game.exe";
 
 // Card handle
 // Really just to get a raw file descriptor for `drm`
@@ -72,6 +80,7 @@ fn main() -> eyre::Result<()> {
     let mut verbosity = log::LevelFilter::Warn;
     let mut multi = false;
     let mut card: Option<String> = None;
+    let mut gamescope: Option<String> = None;
 
     // Handle CLI
     {
@@ -96,77 +105,73 @@ fn main() -> eyre::Result<()> {
                 Short('q') | Long("quiet") => {
                     verbosity = decrement_loglevel(verbosity);
                 }
+                Short('g') | Long("gamescope") => {
+                    gamescope = Some(parser.value()?.into_string().unwrap());
+                }
                 _ => return Err(eyre::eyre!("{}", arg.unexpected())),
             }
         }
     }
 
+    let mut res = (0, 0);
+
     if let Ok(forced) = env::var("RRES_FORCE_RES") {
         if let Some((x, y)) = forced.split_once('x') {
-            println!("{}x{}", x, y);
-            return Ok(());
+            res = (x.parse()?, y.parse()?);
         } else {
             log::error!("failed to parse RRES_FORCE_RES");
             process::exit(1);
         }
-    }
-
-    // Init logger
-    SimpleLogger::new().with_level(verbosity).init()?;
-
-    // Store found displays
-    let mut displays: Vec<Mode> = vec![];
-    // Store the checked cards
-    let mut cards: Vec<path::PathBuf> = vec![];
-
-    if let Some(c) = card {
-        // Open single card
-        let mut file = path::PathBuf::from("/dev/dri/");
-        file.push(&c);
-        if !file.exists() || !c.starts_with("card") {
-            return Err(eyre::eyre!("invalid card ({})", c));
-        }
-        cards.push(file);
     } else {
-        // Open every card on the system
-        for entry in fs::read_dir("/dev/dri/")? {
-            let file = entry?;
+        // Init logger
+        SimpleLogger::new().with_level(verbosity).init()?;
 
-            if let Some(name) = file.file_name().to_str() {
-                if name.starts_with("card") {
-                    cards.push(file.path());
+        // Store found displays
+        let mut displays: Vec<Mode> = vec![];
+        // Store the checked cards
+        let mut cards: Vec<path::PathBuf> = vec![];
+
+        if let Some(c) = card {
+            // Open single card
+            let mut file = path::PathBuf::from("/dev/dri/");
+            file.push(&c);
+            if !file.exists() || !c.starts_with("card") {
+                return Err(eyre::eyre!("invalid card ({})", c));
+            }
+            cards.push(file);
+        } else {
+            // Open every card on the system
+            for entry in fs::read_dir("/dev/dri/")? {
+                let file = entry?;
+
+                if let Some(name) = file.file_name().to_str() {
+                    if name.starts_with("card") {
+                        cards.push(file.path());
+                    }
                 }
             }
         }
-    }
 
-    // Sort cards (card0, card1, card2...)
-    cards.sort();
+        // Sort cards (card0, card1, card2...)
+        cards.sort();
 
-    // Read card list
-    for file in cards {
-        let gpu = Card::open(file);
-        let info = gpu.get_driver()?;
-        log::info!("Found GPU: {}", info.name().to_string_lossy());
-        // Find displays
-        match get_card_modes(gpu) {
-            Ok(modes) => displays.extend_from_slice(&modes),
-            Err(e) => log::error!("failed to read modes: {}", e),
+        // Read card list
+        for file in cards {
+            let gpu = Card::open(file);
+            let info = gpu.get_driver()?;
+            log::info!("Found GPU: {}", info.name().to_string_lossy());
+            // Find displays
+            match get_card_modes(gpu) {
+                Ok(modes) => displays.extend_from_slice(&modes),
+                Err(e) => log::error!("failed to read modes: {}", e),
+            }
         }
-    }
 
-    if displays.is_empty() {
-        log::error!("found no display connected!");
-        process::exit(1);
-    }
-
-    if multi {
-        // List every display
-        for (i, mode) in displays.iter().enumerate() {
-            let res = mode.size();
-            println!("Display #{}: {}x{}", i, res.0, res.1);
+        if displays.is_empty() {
+            log::error!("found no display connected!");
+            process::exit(1);
         }
-    } else {
+
         let selection: usize = env::var("RRES_DISPLAY")
             .unwrap_or_else(|_| "0".to_string())
             .parse()
@@ -174,8 +179,31 @@ fn main() -> eyre::Result<()> {
         if selection > displays.len() - 1 {
             return Err(eyre::eyre!("invalid display: {}", selection));
         }
-        // Print res of first display
-        let res = displays[selection].size();
+        if multi {
+            // List every display
+            for (i, mode) in displays.iter().enumerate() {
+                let res = mode.size();
+                println!("Display #{}: {}x{}", i, res.0, res.1);
+                return Ok(());
+            }
+        } else {
+            // Print res of first display
+            res = displays[selection].size();
+        }
+    }
+
+    if let Some(fsr_mode) = gamescope {
+        if fsr_mode.len() > 0 && fsr_mode.to_lowercase() != "none" {
+            let fsr = match fsr::Fsr::try_from(fsr_mode.as_ref()) {
+                Ok(m) => m,
+                Err(_) => return Err(eyre::eyre!("invalid FSR mode: {}", fsr_mode)),
+            };
+            let fsr_res = fsr.generate(res);
+            println!("-W {} -H {} -U -w {} -h {}", res.0, res.1, fsr_res.0, fsr_res.1);
+        } else {
+            println!("-W {} -H {}", res.0, res.1);
+        }
+    } else {
         println!("{}x{}", res.0, res.1);
     }
 
