@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2022-03-17
+
 ### Added
 
 * `-g, --gamescope <mode>` to enable on-the-fly gamescope FSR support
