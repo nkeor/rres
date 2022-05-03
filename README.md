@@ -6,8 +6,14 @@ _Recently under new maintainership, things subject to changes_
 
 ## Install
 
+### from source
+```sh
+$ cargo install rres
 ```
-cargo install rres
+
+### from AUR (Arch et all)
+```sh
+$ paru -S rres # or rres-git
 ```
 
 ## Usage
