@@ -4,8 +4,11 @@ version = "0.1.2"
 edition = "2021"
 authors = ["Namkhai B. <me@forkbomb9.ch>"]
 description = "A xrandr replacement to gather display resolutions"
-repository = "https://gitlab.com/forkbomb9/rres"
+homepage = "https://sr.ht/~f9/rres"
+repository = "https://git.sr.ht/~f9/rres"
 license = "GPL-3.0-or-later"
+categories = ["os"]
+keywords = ["xrandr", "options", "monitor", "display"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
