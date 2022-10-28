@@ -199,7 +199,10 @@ fn main() -> eyre::Result<()> {
                 Err(_) => return Err(eyre::eyre!("invalid FSR mode: {}", fsr_mode)),
             };
             let fsr_res = fsr.generate(res);
-            println!("-W {} -H {} -U -w {} -h {}", res.0, res.1, fsr_res.0, fsr_res.1);
+            println!(
+                "-W {} -H {} -U -w {} -h {}",
+                res.0, res.1, fsr_res.0, fsr_res.1
+            );
         } else {
             println!("-W {} -H {}", res.0, res.1);
         }
@@ -214,10 +217,14 @@ fn main() -> eyre::Result<()> {
 pub fn get_card_modes<G: ControlDevice>(gpu: G) -> eyre::Result<Vec<Mode>> {
     let mut modes: Vec<Mode> = vec![];
 
-    let resources = gpu.resource_handles().wrap_err("failed to get resource handles")?;
+    let resources = gpu
+        .resource_handles()
+        .wrap_err("failed to get resource handles")?;
     let connectors = resources.connectors();
     for handle in connectors {
-        let connector = gpu.get_connector(*handle).wrap_err("failed to get connector handle")?;
+        let connector = gpu
+            .get_connector(*handle, false)
+            .wrap_err("failed to get connector handle")?;
         if connector.state() == drm::control::connector::State::Connected {
             // Connected, get mode
             modes.push(get_connector_mode(&gpu, connector)?);
