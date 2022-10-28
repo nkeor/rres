@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2022-10-27
+
 ### Updated
 
 * Updated `drm` to v0.7, `simple_logger` to v4.0
