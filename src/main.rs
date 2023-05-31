@@ -37,7 +37,7 @@ Usage: rres [options]
   -q, --quiet             Lower verbosity level. Opposite to -v
   -h, --help              Show this help message
   -g, --gamescope <mode>  Gamescope mode. Also supports FSR upscaling
-                          Supported modes are none, ultra, quality, balanced and performance
+                          Supported modes are native, ultra, quality, balanced and performance
 
 Environment variables:
 
@@ -193,7 +193,7 @@ fn main() -> eyre::Result<()> {
     }
 
     if let Some(fsr_mode) = gamescope {
-        if fsr_mode.len() > 0 && fsr_mode.to_lowercase() != "none" {
+        if fsr_mode.len() > 0 && fsr_mode.to_lowercase() != "native" {
             let fsr = match fsr::Fsr::try_from(fsr_mode.as_ref()) {
                 Ok(m) => m,
                 Err(_) => return Err(eyre::eyre!("invalid FSR mode: {}", fsr_mode)),
