@@ -17,7 +17,6 @@
 
 use std::env;
 use std::fs;
-use std::os::unix::process::CommandExt;
 use std::path;
 use std::process;
 
@@ -44,6 +43,7 @@ Environment variables:
 
   RRES_DISPLAY=<index>      Select display in single mode (starting at 0)
   RRES_FORCE_RES=RESXxRESY  Force a specific resolution to be detected
+  RRES_GAMESCOPE=<path>     Specify a gamescope binary for -g
 
 Wine Virtual Desktop example:
 
@@ -203,7 +203,9 @@ fn main() -> eyre::Result<()> {
     }
 
     if let Some(fsr_mode) = gamescope {
-        let mut gamescope_runner = vec!["gamescope"];
+        let gamescope_bin: String = env::var("RRES_GAMESCOPE").unwrap_or("gamescope".to_string());
+        let mut gamescope_runner: Vec<&str> = vec![&gamescope_bin];
+
         let args;
 
         if fsr_mode.len() > 0 && fsr_mode.to_lowercase() != "native" {
@@ -229,11 +231,17 @@ fn main() -> eyre::Result<()> {
                 .collect::<Vec<&str>>(),
         );
 
-        log::info!("running gamescope with args {:?}", &gamescope_runner[1..]);
+        log::info!(
+            "Running {} with args {:?}",
+            &gamescope_runner[0],
+            &gamescope_runner[1..]
+        );
 
         let mut exec = process::Command::new(gamescope_runner[0]);
         exec.args(&gamescope_runner[1..]);
-        exec.exec();
+        exec.spawn()
+            .wrap_err_with(|| format!("failed to run {gamescope_bin}"))?
+            .wait()?;
     } else {
         println!("{}x{}", res.0, res.1);
     }

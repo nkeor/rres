@@ -35,6 +35,8 @@ Environment variables:
 
   RRES_DISPLAY=<index>      Select display in single mode (starting at 0)
   RRES_FORCE_RES=RESXxRESY  Force a specific resolution to be detected
+  RRES_GAMESCOPE=<path>     Specify a gamescope binary for -g
+
 
 Wine Virtual Desktop example:
 
