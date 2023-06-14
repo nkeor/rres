@@ -123,7 +123,7 @@ fn main() -> eyre::Result<()> {
         }
     }
 
-    let mut res = (0, 0);
+    let res;
 
     if let Ok(forced) = env::var("RRES_FORCE_RES") {
         if let Some((x, y)) = forced.split_once('x') {
@@ -194,8 +194,8 @@ fn main() -> eyre::Result<()> {
             for (i, mode) in displays.iter().enumerate() {
                 let res = mode.size();
                 println!("Display #{}: {}x{}", i, res.0, res.1);
-                return Ok(());
             }
+            return Ok(());
         } else {
             // Print res of first display
             res = displays[selection].size();
