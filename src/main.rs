@@ -206,22 +206,20 @@ fn main() -> eyre::Result<()> {
         let gamescope_bin: String = env::var("RRES_GAMESCOPE").unwrap_or("gamescope".to_string());
         let mut gamescope_runner: Vec<&str> = vec![&gamescope_bin];
 
-        let args;
-
-        if fsr_mode.len() > 0 && fsr_mode.to_lowercase() != "native" {
+        let args = if !fsr_mode.is_empty() && fsr_mode.to_lowercase() != "native" {
             let fsr = match fsr::Fsr::try_from(fsr_mode.as_ref()) {
                 Ok(m) => m,
                 Err(_) => return Err(eyre::eyre!("invalid FSR mode: {}", fsr_mode)),
             };
 
             let fsr_res = fsr.generate(res);
-            args = format!(
+            format!(
                 "-W {} -H {} -U -w {} -h {}",
                 res.0, res.1, fsr_res.0, fsr_res.1
-            );
+            )
         } else {
-            args = format!("-W {} -H {}", res.0, res.1);
-        }
+            format!("-W {} -H {}", res.0, res.1)
+        };
 
         gamescope_runner.extend(args.split(' '));
         gamescope_runner.extend(
