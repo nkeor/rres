@@ -17,6 +17,7 @@
 
 use std::env;
 use std::fs;
+use std::os::unix::process::CommandExt;
 use std::path;
 use std::process;
 
@@ -48,9 +49,12 @@ Wine Virtual Desktop example:
 
   wine \"explorer /desktop=Game,$(./rres)\" game.exe
 
-Gamescope example:
+Gamescope usage:
 
-  gamescope $(./rres -g ultra) -- wine game.exe";
+  ./rres -g FSR_MODE -- GAMESCOPE_ARGS
+
+  Example:
+  ./rres -g ultra -- -f -- wine game.exe";
 
 // Card handle
 // Really just to get a raw file descriptor for `drm`
@@ -81,6 +85,7 @@ fn main() -> eyre::Result<()> {
     let mut multi = false;
     let mut card: Option<String> = None;
     let mut gamescope: Option<String> = None;
+    let mut gamescope_args: Vec<String> = vec![];
 
     // Handle CLI
     {
@@ -108,7 +113,12 @@ fn main() -> eyre::Result<()> {
                 Short('g') | Long("gamescope") => {
                     gamescope = Some(parser.value()?.into_string().unwrap());
                 }
-                _ => return Err(eyre::eyre!("{}", arg.unexpected())),
+                Value(val) => {
+                    gamescope_args.push(val.to_string_lossy().to_string());
+                    gamescope_args
+                        .extend(parser.raw_args()?.map(|s| s.to_string_lossy().to_string()));
+                }
+                _ => return Err(arg.unexpected().into()),
             }
         }
     }
@@ -193,19 +203,37 @@ fn main() -> eyre::Result<()> {
     }
 
     if let Some(fsr_mode) = gamescope {
+        let mut gamescope_runner = vec!["gamescope"];
+        let args;
+
         if fsr_mode.len() > 0 && fsr_mode.to_lowercase() != "native" {
             let fsr = match fsr::Fsr::try_from(fsr_mode.as_ref()) {
                 Ok(m) => m,
                 Err(_) => return Err(eyre::eyre!("invalid FSR mode: {}", fsr_mode)),
             };
+
             let fsr_res = fsr.generate(res);
-            println!(
+            args = format!(
                 "-W {} -H {} -U -w {} -h {}",
                 res.0, res.1, fsr_res.0, fsr_res.1
             );
         } else {
-            println!("-W {} -H {}", res.0, res.1);
+            args = format!("-W {} -H {}", res.0, res.1);
         }
+
+        gamescope_runner.extend(args.split(' '));
+        gamescope_runner.extend(
+            gamescope_args
+                .iter()
+                .map(|s| s.as_str())
+                .collect::<Vec<&str>>(),
+        );
+
+        log::info!("running gamescope with args {:?}", &gamescope_runner[1..]);
+
+        let mut exec = process::Command::new(gamescope_runner[0]);
+        exec.args(&gamescope_runner[1..]);
+        exec.exec();
     } else {
         println!("{}x{}", res.0, res.1);
     }

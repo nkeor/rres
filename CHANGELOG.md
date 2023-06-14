@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Breaking changes
+
+* Reworked gamescope integration: `rres -g FSR_MODE -- GAMESCOPE_ARGS`
+
 ### Changed
 
 * Replaced `-g none` with `-g native`

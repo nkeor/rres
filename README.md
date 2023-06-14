@@ -29,7 +29,7 @@ Usage: rres [options]
   -q, --quiet             Lower verbosity level. Opposite to -v
   -h, --help              Show this help message
   -g, --gamescope <mode>  Gamescope mode. Also supports FSR upscaling
-                          Supported modes are none, ultra, quality, balanced and performance
+                          Supported modes are native, ultra, quality, balanced and performance
 
 Environment variables:
 
@@ -40,9 +40,12 @@ Wine Virtual Desktop example:
 
   wine "explorer /desktop=Game,$(./rres)" game.exe
 
-Gamescope example:
+Gamescope usage:
 
-  gamescope $(./rres -g ultra) -- wine game.exe
+  ./rres -g FSR_MODE -- GAMESCOPE_ARGS
+
+  Example:
+  ./rres -g ultra -- -f -- wine game.exe
 ```
 
 ## Changelog
