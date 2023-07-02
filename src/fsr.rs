@@ -2,7 +2,7 @@ pub enum Fsr {
     Ultra,
     Quality,
     Balanced,
-    Performance
+    Performance,
 }
 
 impl TryFrom<&str> for Fsr {
@@ -13,10 +13,9 @@ impl TryFrom<&str> for Fsr {
             "quality" => Ok(Self::Quality),
             "balanced" => Ok(Self::Balanced),
             "performance" => Ok(Self::Performance),
-            _ => Err(())
+            _ => Err(()),
         }
     }
-
 }
 
 impl Fsr {
@@ -58,9 +57,9 @@ impl Fsr {
             };
 
             return (
-                (target_res.0 as f32 / factor).floor() as u16,
-                (target_res.1 as f32 / factor).floor() as u16,
-            )
+                (f32::from(target_res.0) / factor).floor() as u16,
+                (f32::from(target_res.1) / factor).floor() as u16,
+            );
         }
     }
 }
