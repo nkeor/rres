@@ -16,9 +16,9 @@ keywords = ["xrandr", "options", "monitor", "display"]
 lto = true
 
 [dependencies]
-drm = "0.7"
+drm = "0.9"
 anyhow = "1.0"
-lexopt = "0.2"
+lexopt = "0.3"
 log = "0.4"
 
 [dependencies.simple_logger]

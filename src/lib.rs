@@ -17,6 +17,7 @@
 
 use std::env;
 use std::fs;
+use std::os;
 use std::path;
 
 use anyhow::Context;
@@ -26,12 +27,12 @@ use drm::Device;
 mod fsr;
 
 // Card handle
-// Really just to get a raw file descriptor for `drm`
+// Really just to get a file descriptor for `drm`
 struct Card(std::fs::File);
 
-impl std::os::unix::io::AsRawFd for Card {
-    fn as_raw_fd(&self) -> std::os::unix::prelude::RawFd {
-        self.0.as_raw_fd()
+impl os::fd::AsFd for Card {
+    fn as_fd(&self) -> os::fd::BorrowedFd<'_> {
+        self.0.as_fd()
     }
 }
 
