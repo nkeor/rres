@@ -6,6 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2023-08-09
+
 ### Breaking changes
 
 * Reworked gamescope integration: `rres -g FSR_MODE -- GAMESCOPE_ARGS`
@@ -13,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 * Replaced `-g none` with `-g native`
+* rres is now also a library
 
 ## [0.1.3] - 2022-10-27
 
