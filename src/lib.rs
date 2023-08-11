@@ -107,7 +107,7 @@ pub fn get_displays(card: Option<String>) -> anyhow::Result<Vec<Mode>> {
     for file in cards {
         let gpu = Card::open(file);
         let info = gpu.get_driver()?;
-        log::info!("Found GPU: {}", info.name().to_string_lossy());
+        log::debug!("Found GPU: {}", info.name().to_string_lossy());
         // Find displays
         match get_card_modes(&gpu) {
             Ok(modes) => displays.extend_from_slice(&modes),
@@ -189,7 +189,7 @@ fn get_connector_mode<G: ControlDevice>(
             let crtc = gpu.get_crtc(crtc_handle).context("failed to get crtc")?;
             // Get current mode, and store it
             if let Some(current_mode) = crtc.mode() {
-                log::info!(
+                log::debug!(
                     "Found display: {:?}, {}x{}",
                     connector.interface(),
                     current_mode.size().0,
