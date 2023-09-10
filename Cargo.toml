@@ -1,6 +1,6 @@
 [package]
 name = "rres"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 authors = ["Namkhai B. <nk@nkeor.me>"]
 description = "A xrandr replacement to gather display resolutions"
